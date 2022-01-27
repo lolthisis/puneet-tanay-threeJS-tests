@@ -6,6 +6,7 @@ import "./styles.css";
 const Scene = () => {
   const scene = useRef();
   useFrame(() => {
+    console.log("printing");
     scene.current.rotation.y += 0.04;
     scene.current.rotation.x += 0.04;
     scene.current.rotation.z += 0.04;
