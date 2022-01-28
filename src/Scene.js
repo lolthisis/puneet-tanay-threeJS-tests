@@ -1,12 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
+import { exportGLTF } from "./exportGltf";
 import {
+  Html,
   Sphere,
   RoundedBox,
   OrbitControls,
   useTexture,
   useMatcapTexture
 } from "@react-three/drei";
+import { v4 as uuidv4 } from "uuid";
 
 const Character = ({ ...props }) => {
   const roundedBox = useRef();
@@ -21,6 +24,7 @@ const Character = ({ ...props }) => {
       smoothness={4}
       // position={(0, 5, 0)}
       ref={roundedBox}
+      position={props.position}
     >
       <meshLambertMaterial
         attach="material"
@@ -46,7 +50,8 @@ const Scene = () => {
   const [matcap] = useMatcapTexture("161B1F_C7E0EC_90A5B3_7B8C9B");
 
   // Setup Scene References
-  const [sceneRotation, setSceneRotation] = useState(0);
+  const [sceneRotation, setSceneRotation] = useState(1);
+  const [hovered, setSphereHover] = useState(false);
 
   const box = useRef();
 
@@ -59,24 +64,52 @@ const Scene = () => {
 
   useEffect(() => {
     // roundedBox.current.rotation.y = sceneRotation;
-    box.current.rotation.z = sceneRotation;
+    if (hovered) box.current.rotation.z = sceneRotation;
   }, [sceneRotation]);
+
+  const [spawnCount, setSpawnCount] = useState([]);
+  const handleClick = useCallback(
+    (e) => setSpawnCount((spawnCounts) => [...spawnCounts, uuidv4()]),
+    []
+  );
 
   // Setup Per Frame Update
   useFrame((delta, time) => {
     setSceneRotation(sceneRotation + 0.01);
   });
-
+  const meshGroupRef = useRef();
   return (
     <>
-      <group name="GEOMETRIES">
-        <Character
-          sceneRotation={sceneRotation}
-          textureResources={CHARACTER_TEXTURES}
-        />
-        <Sphere args={[1, 22, 22]} radius={0.05} smoothness={4} ref={box}>
+      <Html>
+        <button type="button" onClick={() => exportGLTF(meshGroupRef.current)}>
+          Export GLTF!
+        </button>
+      </Html>
+      <group name="GEOMETRIES" ref={meshGroupRef}>
+        {spawnCount.map((key, index) => (
+          <Character
+            key={key}
+            sceneRotation={sceneRotation}
+            textureResources={CHARACTER_TEXTURES}
+            position={[0, -4 + index * 1, 0]}
+          />
+        ))}
+
+        <Sphere
+          args={[1, 22, 22]}
+          radius={0.05}
+          smoothness={4}
+          ref={box}
+          onClick={handleClick}
+          onPointerEnter={() => {
+            setSphereHover(true);
+          }}
+          onPointerLeave={() => {
+            setSphereHover(false);
+          }}
+        >
           <meshLambertMaterial
-            map={CHARACTER_TEXTURES.DIFF}
+            map={CHARACTER_TEXTURES.NORMAL}
             attach="material"
           />
         </Sphere>
