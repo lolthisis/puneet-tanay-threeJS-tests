@@ -8,7 +8,7 @@ function exportGLTF(input) {
     onlyVisible: true,
     truncateDrawRange: false,
     binary: true,
-    maxTextureSize: Number(4096) || Infinity // To prevent NaN value
+    maxTextureSize: Number(512) || Infinity // To prevent NaN value
   };
   gltfExporter.parse(
     input,

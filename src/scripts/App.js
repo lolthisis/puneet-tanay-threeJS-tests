@@ -1,18 +1,19 @@
 // Import Sytles
-import "./styles.css";
+import "../styles.css";
 import React, { Suspense } from "react";
 
 // Import App Modules
-import { Loader } from "@react-three/drei";
+import { Environment, Loader } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Scene } from "./Scene.js";
+import { Scene } from "./Scene";
 
 export default function App() {
   return (
     <>
-      <Canvas>
+      <Canvas shadows dpr={[1, 2]}>
         <Suspense fallback={null}>
           <Scene />
+          <Environment preset="city" />
         </Suspense>
       </Canvas>
 
