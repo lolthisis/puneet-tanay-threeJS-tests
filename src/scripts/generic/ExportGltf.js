@@ -1,6 +1,6 @@
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 
-function exportGLTF(input) {
+function ExportGLTF(input) {
   const gltfExporter = new GLTFExporter();
 
   const options = {
@@ -52,4 +52,4 @@ function saveArrayBuffer(buffer, filename) {
   save(new Blob([buffer], { type: "application/octet-stream" }), filename);
 }
 
-export { exportGLTF };
+export { ExportGLTF };

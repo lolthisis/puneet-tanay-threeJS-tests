@@ -24,7 +24,7 @@ import { useControls, buttonGroup } from "leva";
 import { v4 as uuidv4 } from "uuid";
 import { ScreenSpaceUI } from "./ScreenSpaceUI.js";
 import { Outline, EffectComposer } from "@react-three/postprocessing";
-import { exportGLTF } from "../generic/exportGltf";
+import { ExportGLTF } from "../generic/exportGltf";
 import { Draggable } from "../generic/Draggable";
 
 // import create from "zustand";
@@ -100,7 +100,7 @@ const GameElements = ({ ...props }) => {
         handleSpawn();
       },
       "Export GLTF": (meshGroupRef) => {
-        exportGLTF(meshGroupRef);
+        ExportGLTF(meshGroupRef);
       }
     })
   });
