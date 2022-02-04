@@ -6,6 +6,7 @@ import React, { Suspense } from "react";
 import { Environment, Loader } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Scene } from "./Scene";
+import { ScreenSpaceUI } from "./components/ScreenSpaceUI";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Environment preset="city" />
         </Suspense>
       </Canvas>
+      <ScreenSpaceUI />
 
       {/* https://docs.pmnd.rs/drei/loaders/loader */}
       <Loader />

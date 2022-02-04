@@ -18,13 +18,14 @@ import {
   ContactShadows,
   TransformControls,
   useGLTF,
-  useCursor
+  useCursor,
+  MeshWobbleMaterial
 } from "@react-three/drei";
 import { useControls, buttonGroup } from "leva";
 import { v4 as uuidv4 } from "uuid";
 import { ScreenSpaceUI } from "./ScreenSpaceUI.js";
 import { Outline, EffectComposer } from "@react-three/postprocessing";
-import { ExportGLTF } from "../generic/exportGltf";
+import { ExportGLTF } from "../generic/ExportGltf";
 import { Draggable } from "../generic/Draggable";
 
 // import create from "zustand";
@@ -52,9 +53,12 @@ function Model() {
 }
 function Box({ onHover, ...props }) {
   const ref = useRef();
-  useFrame(
-    (state, delta) => (ref.current.rotation.x = ref.current.rotation.y += 0)
-  );
+  useEffect(() => {
+    props.selectedItem.current = ref.current;
+  });
+  // useFrame(
+  //   (state, delta) => (ref.current.rotation.x = ref.current.rotation.y += 0)
+  // );
   return (
     <mesh
       ref={ref}
@@ -67,6 +71,14 @@ function Box({ onHover, ...props }) {
     </mesh>
   );
 }
+function distance(p1, p2) {
+  const a = p2.x - p1.x;
+  const b = p2.y - p1.y;
+  const c = p2.z - p1.z;
+
+  return Math.sqrt(a * a + b * b + c * c);
+}
+
 const GameElements = ({ ...props }) => {
   // In here it could load textures, images, triangulate textgeometry, etc
   // The line below produces a fake load, emulating loading assets/set-up processing
@@ -90,6 +102,9 @@ const GameElements = ({ ...props }) => {
   const sphere = useRef();
   const transform = useRef();
   const orbit = useRef();
+  const leftPlacement = useRef();
+  const rightPlacement = useRef();
+  const selectedItem = useRef();
 
   const { mode } = useControls({
     mode: { value: "translate", options: ["translate", "rotate", "scale"] }
@@ -108,6 +123,9 @@ const GameElements = ({ ...props }) => {
   const [target, setTarget] = useState(null);
   const [lookAtTarget, setLookAtTarget] = useState(null);
   const [hovered, onHover] = useState(null);
+  const [nearleft, setNearLeft] = useState(false);
+  const [leftPos, setLeftPos] = useState([1.3, 0.15, 1.3]);
+  const [rightPos, setRightPos] = useState([1.3, 0.15, -1.3]);
   const selected = hovered ? [hovered] : undefined;
 
   // Setup Scene Initialisation
@@ -148,6 +166,21 @@ const GameElements = ({ ...props }) => {
       // state.camera.position.lerp(p, THREE.MathUtils.damp(0, 1, 3, dt));
       // state.camera.quaternion.slerp(q, THREE.MathUtils.damp(0, 1, 3, dt));
     }
+    if (selectedItem.current) {
+      var pos = selectedItem.current.getWorldPosition();
+      var leftDist = distance(pos, {
+        x: leftPos[0],
+        y: leftPos[1],
+        z: leftPos[2]
+      });
+      var rightDist = distance(pos, {
+        x: rightPos[0],
+        y: rightPos[1],
+        z: rightPos[2]
+      });
+
+      setNearLeft(leftDist < rightDist);
+    }
   });
 
   const [drag, setDrag] = useState(false);
@@ -164,7 +197,6 @@ const GameElements = ({ ...props }) => {
           <div class="content">View</div>
         </Html> */}
       </Model>
-
       {spawnCount.map((key, index) => (
         <Draggable {...dragProps}>
           <Character
@@ -176,7 +208,6 @@ const GameElements = ({ ...props }) => {
           />
         </Draggable>
       ))}
-
       {/* {target && (
         <TransformControls ref={transform} object={target} mode={mode} />
       )} */}
@@ -188,23 +219,33 @@ const GameElements = ({ ...props }) => {
         position={[0.3, 0.5, 0]}
         ref={sphere}
       >
-        <Html
-          scale={1}
-          // distanceFactor={10}
-          position={[-1, 1, 1]}
-          // transform
-          // occlude
-        >
-          <div className="annotation">View</div>
-        </Html>
         <meshLambertMaterial
           map={CHARACTER_TEXTURES.NORMAL}
           attach="material"
         />
       </Sphere>
       <Draggable {...dragProps}>
-        <Box onHover={onHover} position={[0, 3, 0]} />
+        <mesh ref={selectedItem} position={[0, 2, 0]}>
+          <boxGeometry />
+          <meshStandardMaterial color="orange" />
+        </mesh>
       </Draggable>
+      {/* {dragging && ( */}
+      <>
+        {nearleft && (
+          <mesh ref={leftPlacement} position={leftPos}>
+            <boxGeometry />
+            <meshToonMaterial color="lightblue" opacity={0.55} transparent />
+          </mesh>
+        )}
+        {!nearleft && (
+          <mesh ref={rightPlacement} position={rightPos}>
+            <boxGeometry />
+            <meshBasicMaterial color="lightblue" opacity={0.55} transparent />
+          </mesh>
+        )}
+      </>
+      {/* )} */}
 
       {/* <EffectComposer multisampling={8} autoClear={false}>
         <Outline

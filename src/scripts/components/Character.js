@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { RoundedBox, useCursor } from "@react-three/drei";
+import { useCube } from "@react-three/cannon";
 
 const Character = ({ ...props }) => {
   const roundedBox = useRef();

@@ -5,6 +5,7 @@
   "keywords": [],
   "main": "src/index.js",
   "dependencies": {
+    "@react-three/cannon": "4.6.1",
     "@react-three/drei": "4.0.3",
     "@react-three/fiber": "6.0.8",
     "@react-three/postprocessing": "2.1.2",
