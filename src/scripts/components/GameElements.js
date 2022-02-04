@@ -43,7 +43,7 @@ function Model() {
   return (
     <group dispose={null} scale={2} position={[0, 1, 0]}>
       <mesh geometry={nodes.Cube.geometry}>
-        <meshStandardMaterial transparent />
+        <meshStandardMaterial />
       </mesh>
       <lineSegments geometry={edges} renderOrder={100}>
         <lineBasicMaterial color="black" />
@@ -54,20 +54,19 @@ function Model() {
 function Box({ onHover, ...props }) {
   const ref = useRef();
   useEffect(() => {
-    props.selectedItem.current = ref.current;
+    if (props.selectedItem) props.selectedItem.current = ref.current;
   });
   // useFrame(
   //   (state, delta) => (ref.current.rotation.x = ref.current.rotation.y += 0)
   // );
   return (
-    <mesh
-      ref={ref}
-      {...props}
-      onPointerOver={(e) => onHover(ref)}
-      onPointerOut={(e) => onHover(null)}
-    >
+    <mesh ref={ref} {...props}>
       <boxGeometry />
-      <meshStandardMaterial color="orange" />
+      <meshStandardMaterial
+        opacity={props.opacity}
+        color="orange"
+        transparent
+      />
     </mesh>
   );
 }
@@ -104,7 +103,12 @@ const GameElements = ({ ...props }) => {
   const orbit = useRef();
   const leftPlacement = useRef();
   const rightPlacement = useRef();
+  const leftPlacementMat = useRef();
+  const rightPlacementMat = useRef();
   const selectedItem = useRef();
+  const parentSpawner = useRef();
+  const box1 = useRef();
+  const box2 = useRef();
 
   const { mode } = useControls({
     mode: { value: "translate", options: ["translate", "rotate", "scale"] }
@@ -124,6 +128,8 @@ const GameElements = ({ ...props }) => {
   const [lookAtTarget, setLookAtTarget] = useState(null);
   const [hovered, onHover] = useState(null);
   const [nearleft, setNearLeft] = useState(false);
+  const [leftOpacity, setLeftOpacity] = useState(0);
+  const [rightOpacity, setRightOpacity] = useState(0);
   const [leftPos, setLeftPos] = useState([1.3, 0.15, 1.3]);
   const [rightPos, setRightPos] = useState([1.3, 0.15, -1.3]);
   const selected = hovered ? [hovered] : undefined;
@@ -136,7 +142,7 @@ const GameElements = ({ ...props }) => {
     return () => {
       //Cleanup
     };
-  }, []);
+  }, [props.grabbing]);
 
   // useEffect(() => {
   //   if (transform.current) {
@@ -147,12 +153,14 @@ const GameElements = ({ ...props }) => {
   //     return () => controls.removeEventListener("dragging-changed", callback);
   //   }
   // });
-
+  var i = 0;
   const [spawnCount, setSpawnCount] = useState([]);
-  const handleSpawn = useCallback(
-    (e) => setSpawnCount((spawnCounts) => [...spawnCounts, uuidv4()]),
-    []
-  );
+  // const [spawnedPos, setSpawnedPos] = useState([]);
+  const handleSpawn = useCallback((e) => {
+    i++;
+    // setSpawnedPos((spawnedPos) => [...spawnedPos, e]);
+    setSpawnCount((spawnCounts) => [...spawnCounts, i]);
+  }, []);
 
   var q = new THREE.Quaternion(),
     p = new THREE.Vector3();
@@ -161,26 +169,27 @@ const GameElements = ({ ...props }) => {
 
   // Setup Per Frame Update
   useFrame((state, dt, delta, time) => {
+    // console.log(spawnCount.map(key, 1));
     if (!hovered) {
       // state.camera.forward.lookAt(lookAtTarget.position);
       // state.camera.position.lerp(p, THREE.MathUtils.damp(0, 1, 3, dt));
       // state.camera.quaternion.slerp(q, THREE.MathUtils.damp(0, 1, 3, dt));
     }
-    if (selectedItem.current) {
-      var pos = selectedItem.current.getWorldPosition();
-      var leftDist = distance(pos, {
-        x: leftPos[0],
-        y: leftPos[1],
-        z: leftPos[2]
-      });
-      var rightDist = distance(pos, {
-        x: rightPos[0],
-        y: rightPos[1],
-        z: rightPos[2]
-      });
+    // if (selectedItem.current) {
+    //   var pos = selectedItem.current.getWorldPosition();
+    //   var leftDist = distance(pos, {
+    //     x: leftPos[0],
+    //     y: leftPos[1],
+    //     z: leftPos[2]
+    //   });
+    //   var rightDist = distance(pos, {
+    //     x: rightPos[0],
+    //     y: rightPos[1],
+    //     z: rightPos[2]
+    //   });
 
-      setNearLeft(leftDist < rightDist);
-    }
+    //   setNearLeft(leftDist < rightDist);
+    // }
   });
 
   const [drag, setDrag] = useState(false);
@@ -197,77 +206,150 @@ const GameElements = ({ ...props }) => {
           <div class="content">View</div>
         </Html> */}
       </Model>
-      {spawnCount.map((key, index) => (
-        <Draggable {...dragProps}>
-          <Character
-            key={key}
-            sceneRotation={sceneRotation}
-            textureResources={CHARACTER_TEXTURES}
-            position={[-4, -1 + index * 1, 0]}
-            setTarget={setTarget}
-          />
-        </Draggable>
-      ))}
+
+      <group ref={parentSpawner}>
+        {spawnCount.map((key, index) => (
+          <Draggable {...dragProps}>
+            <Character
+              key={key}
+              sceneRotation={sceneRotation}
+              textureResources={CHARACTER_TEXTURES}
+              position={[-4, -1 + index * 1, 0]}
+              setTarget={setTarget}
+              onHover={onHover}
+            />
+          </Draggable>
+        ))}
+      </group>
+
+      {/* <Draggable {...dragProps}> */}
+      <Box
+        ref={box1}
+        position={leftPos}
+        opacity={leftOpacity}
+        onPointerUp={() => {
+          // setLeftOpacity(0);
+          // if (box1.current) box1.current.position = leftPos;
+        }}
+      />
+      {/* </Draggable> */}
+      {/* <Draggable {...dragProps}> */}
+      <Box
+        ref={box2}
+        position={rightPos}
+        opacity={rightOpacity}
+        onPointerUp={() => {
+          // setRightOpacity(0);
+          // if (box2.current) box2.current.position = rightPos;
+        }}
+      />
+      {/* </Draggable> */}
       {/* {target && (
         <TransformControls ref={transform} object={target} mode={mode} />
       )} */}
-
-      <Sphere
-        args={[1, 22, 22]}
-        radius={0.05}
-        smoothness={4}
-        position={[0.3, 0.5, 0]}
-        ref={sphere}
-      >
-        <meshLambertMaterial
-          map={CHARACTER_TEXTURES.NORMAL}
-          attach="material"
-        />
-      </Sphere>
       <Draggable {...dragProps}>
+        <Sphere
+          args={[1, 22, 22]}
+          radius={0.05}
+          smoothness={4}
+          position={[0.3, 0.5, 0]}
+          ref={sphere}
+          onPointerOver={() => {
+            onHover(sphere);
+          }}
+          onPointerOut={() => {
+            onHover(null);
+          }}
+        >
+          <meshLambertMaterial
+            map={CHARACTER_TEXTURES.NORMAL}
+            attach="material"
+          />
+        </Sphere>
+      </Draggable>
+      {/* <Draggable {...dragProps}>
         <mesh ref={selectedItem} position={[0, 2, 0]}>
           <boxGeometry />
           <meshStandardMaterial color="orange" />
         </mesh>
-      </Draggable>
-      {/* {dragging && ( */}
-      <>
-        {nearleft && (
-          <mesh ref={leftPlacement} position={leftPos}>
-            <boxGeometry />
-            <meshToonMaterial color="lightblue" opacity={0.55} transparent />
-          </mesh>
-        )}
-        {!nearleft && (
-          <mesh ref={rightPlacement} position={rightPos}>
-            <boxGeometry />
-            <meshBasicMaterial color="lightblue" opacity={0.55} transparent />
-          </mesh>
-        )}
-      </>
-      {/* )} */}
+      </Draggable> */}
 
-      {/* <EffectComposer multisampling={8} autoClear={false}>
+      {props.grabbing && (
+        <>
+          <mesh
+            ref={leftPlacement}
+            onPointerUp={() => {
+              setLeftOpacity(1);
+            }}
+            onPointerEnter={() => {
+              console.log(leftOpacity);
+              if (leftOpacity !== 0) return;
+              if (leftPlacementMat.current)
+                leftPlacementMat.current.opacity = 0.9;
+            }}
+            onPointerLeave={() => {
+              if (leftOpacity !== 0) return;
+              if (leftPlacementMat.current)
+                leftPlacementMat.current.opacity = 0.55;
+            }}
+            position={leftPos}
+          >
+            <boxGeometry />
+            <meshLambertMaterial
+              ref={leftPlacementMat}
+              color="lightblue"
+              opacity={leftOpacity !== 0 ? 0 : 0.55}
+              transparent
+            />
+          </mesh>
+          <mesh
+            ref={rightPlacement}
+            position={rightPos}
+            onPointerUp={() => {
+              setRightOpacity(1);
+            }}
+            onPointerEnter={() => {
+              if (rightOpacity !== 0) return;
+              if (rightPlacementMat.current)
+                rightPlacementMat.current.opacity = 0.9;
+            }}
+            onPointerLeave={() => {
+              if (rightOpacity !== 0) return;
+              if (rightPlacementMat.current)
+                rightPlacementMat.current.opacity = 0.55;
+            }}
+          >
+            <boxGeometry />
+            <meshBasicMaterial
+              ref={rightPlacementMat}
+              color="lightblue"
+              opacity={rightOpacity !== 0 ? 0 : 0.55}
+              transparent
+            />
+          </mesh>
+        </>
+      )}
+
+      <EffectComposer multisampling={8} autoClear={false}>
         <Outline
           blur
           selection={selected}
-          visibleEdgeColor="green"
+          visibleEdgeColor="white"
           edgeStrength={50}
           width={500}
         />
-      </EffectComposer> */}
-      {/* <Sphere args={[1, 22, 22]}>
-    <meshMatcapMaterial matcap={matcap} />
-  </Sphere> */}
+      </EffectComposer>
+
       <ContactShadows
-        rotation-x={Math.PI / 2}
+        rotation={[Math.PI / 2, 0, 0]}
         position={[0, -1, 0]}
-        opacity={0.75}
+        doublePass
+        opacity={0.3}
         width={20}
         height={20}
-        blur={2.6}
+        blur={1}
         far={1}
-        resolution={128}
+        resolution={1024}
       />
       <OrbitControls enabled={!drag} />
     </group>

@@ -5,7 +5,6 @@ const ScreenSpaceUI = ({ ...props }) => {
   const itemRef = useRef();
   const cursorImgRef = useRef();
   const root = useRef();
-  const [grabbing, setGrabbing] = useState(false);
 
   function OnMouseMove(e) {
     // console.log("move");
@@ -20,7 +19,7 @@ const ScreenSpaceUI = ({ ...props }) => {
   function resetCursorImg() {
     if (root.current) root.current.style.cursor = "default";
     if (cursorImgRef.current) cursorImgRef.current.classList.remove("active");
-    setGrabbing(false);
+    props.setGrabbing(false);
   }
   function OnMouseUp(e) {
     // console.log("up");
@@ -48,7 +47,7 @@ const ScreenSpaceUI = ({ ...props }) => {
           src="https://www.transparentpng.com/thumb/cube/AZIkiw-cube-transparent-image.png"
           onMouseDown={() => {
             console.log("down");
-            setGrabbing(true);
+            props.setGrabbing(true);
             if (cursorImgRef.current) {
               cursorImgRef.current.src =
                 "https://www.transparentpng.com/thumb/cube/AZIkiw-cube-transparent-image.png";

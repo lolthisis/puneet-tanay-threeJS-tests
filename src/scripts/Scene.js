@@ -1,9 +1,9 @@
 import { Root } from "./Root";
 
-const Scene = () => {
+const Scene = ({ ...props }) => {
   return (
     <>
-      <Root />
+      <Root grabbing={props.grabbing} />
     </>
   );
 };

@@ -17,8 +17,14 @@ const Character = ({ ...props }) => {
       // position={(0, 5, 0)}
       ref={roundedBox}
       position={props.position}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
+      onPointerOver={(e) => {
+        // props.onHover(roundedBox);
+        setHovered(true);
+      }}
+      onPointerOut={() => {
+        // props.onHover(null);
+        setHovered(false);
+      }}
       onClick={(e) => props.setTarget(e.object)}
     >
       <meshLambertMaterial
