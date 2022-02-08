@@ -127,8 +127,8 @@ const GameElements = ({ ...props }) => {
       Robo: () => {
         handleSpawn("Robo");
       },
-      Lambo: () => {
-        handleSpawn("Lambo");
+      Craftsman: () => {
+        handleSpawn("Craftsman");
       }
     })
   });
@@ -142,12 +142,13 @@ const GameElements = ({ ...props }) => {
   const [leftPos, setLeftPos] = useState([1.3, 0.15, 1.3]);
   const [rightPos, setRightPos] = useState([1.3, 0.15, -1.3]);
   const selected = hovered ? [hovered] : undefined;
-
+  const spawnThis = useRef();
   // Setup Scene Initialisation
   useEffect(() => {
     // Update the document title using the browser API
-    console.log(props.grabbing);
-    if (props.grabbing) handleSpawn("" + props.grabbing);
+
+    if (props.grabbing) spawnThis.current = props.grabbing;
+    else if (spawnThis.current) handleSpawn("" + spawnThis.current);
     // setLookAtTarget(sphere);
     return () => {
       //Cleanup

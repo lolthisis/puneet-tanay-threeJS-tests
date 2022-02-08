@@ -27,14 +27,7 @@ const Model = ({ ...props }) => {
   }, [gltf]);
 
   return (
-    <Suspense
-      fallback={
-        <mesh ref={ref2} position={props.position} castShadow={false}>
-          <boxGeometry />
-          <meshStandardMaterial opacity={0.3} color="blue" transparent />
-        </mesh>
-      }
-    >
+    <>
       <primitive
         ref={ref}
         dispose={null}
@@ -52,7 +45,7 @@ const Model = ({ ...props }) => {
           transparent
         />
       </mesh>
-    </Suspense>
+    </>
   );
 };
 

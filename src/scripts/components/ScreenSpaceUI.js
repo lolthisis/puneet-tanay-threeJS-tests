@@ -39,6 +39,7 @@ const ScreenSpaceUI = ({ ...props }) => {
   return (
     <>
       <img className={"cursorImg"} ref={cursorImgRef} alt="" src="" />
+
       <div className={"ItemsParent"}>
         <img
           className={"Item"}
@@ -79,6 +80,21 @@ const ScreenSpaceUI = ({ ...props }) => {
             if (cursorImgRef.current) {
               cursorImgRef.current.src =
                 "https://images.pngnice.com/download/2007/Grill-PNG-Free-Image.png";
+              cursorImgRef.current.classList.add("active");
+            }
+            if (root.current) root.current.style.cursor = "grabbing";
+          }}
+          alt="Cube"
+        />
+        <img
+          className={"Item"}
+          src="https://pbs.twimg.com/profile_images/1136014070765772800/zpkkb7B0_400x400.png"
+          onMouseDown={() => {
+            console.log("down");
+            props.setGrabbing("Craftsman");
+            if (cursorImgRef.current) {
+              cursorImgRef.current.src =
+                "https://pbs.twimg.com/profile_images/1136014070765772800/zpkkb7B0_400x400.png";
               cursorImgRef.current.classList.add("active");
             }
             if (root.current) root.current.style.cursor = "grabbing";

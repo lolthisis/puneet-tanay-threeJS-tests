@@ -22,6 +22,12 @@ const urls = {
     scale: "0.02",
     url:
       "https://xoncvtiuvsqcpmssbjqw.supabase.in/storage/v1/object/public/public-epigraph/lambo.glb"
+  },
+  Craftsman: {
+    name: "Craftsman",
+    scale: "2",
+    url:
+      "https://xoncvtiuvsqcpmssbjqw.supabase.in/storage/v1/object/public/public-epigraph/craftsman.glb"
   }
 };
 export { urls };
