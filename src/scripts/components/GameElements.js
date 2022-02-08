@@ -1,4 +1,5 @@
 import React, {
+  cloneElement,
   useMemo,
   useEffect,
   useRef,
@@ -22,26 +23,28 @@ import {
   MeshWobbleMaterial
 } from "@react-three/drei";
 import { useControls, buttonGroup } from "leva";
-import { v4 as uuidv4 } from "uuid";
-import { ScreenSpaceUI } from "./ScreenSpaceUI.js";
+import { Item } from "./Item.js";
+import { Model } from "./Model.js";
 import { Outline, EffectComposer } from "@react-three/postprocessing";
 import { ExportGLTF } from "../generic/ExportGltf";
 import { Draggable } from "../generic/Draggable";
-
+import { Box2 } from "three";
+import { urls } from "../constants/constants";
+import { v4 } from "uuid";
 // import create from "zustand";
 
 // const useStore = create((set) => ({
 //   target: null,
 //   setTarget: (target) => set({ target })
 // }));
-function Model() {
+function Base({ ...props }) {
   const { nodes } = useGLTF("/headless.glb");
   const edges = useMemo(
     () => new THREE.EdgesGeometry(nodes.Cube.geometry, 15),
     [nodes]
   );
   return (
-    <group dispose={null} scale={2} position={[0, 1, 0]}>
+    <group dispose={null} {...props}>
       <mesh geometry={nodes.Cube.geometry}>
         <meshStandardMaterial />
       </mesh>
@@ -51,22 +54,18 @@ function Model() {
     </group>
   );
 }
-function Box({ onHover, ...props }) {
-  const ref = useRef();
-  useEffect(() => {
-    if (props.selectedItem) props.selectedItem.current = ref.current;
-  });
+function Box({ position, opacity }) {
+  // const ref2 = useRef();
+  // useEffect(() => {
+  // if (props.selectedItem) props.selectedItem.current = ref.current;
+  // });
   // useFrame(
   //   (state, delta) => (ref.current.rotation.x = ref.current.rotation.y += 0)
   // );
   return (
-    <mesh ref={ref} {...props}>
+    <mesh position={position}>
       <boxGeometry />
-      <meshStandardMaterial
-        opacity={props.opacity}
-        color="orange"
-        transparent
-      />
+      <meshStandardMaterial opacity={opacity} color="orange" transparent />
     </mesh>
   );
 }
@@ -107,19 +106,29 @@ const GameElements = ({ ...props }) => {
   const rightPlacementMat = useRef();
   const selectedItem = useRef();
   const parentSpawner = useRef();
-  const box1 = useRef();
-  const box2 = useRef();
-
   const { mode } = useControls({
     mode: { value: "translate", options: ["translate", "rotate", "scale"] }
   });
   useControls({
-    " ": buttonGroup({
-      Spawn: () => {
-        handleSpawn();
-      },
-      "Export GLTF": (meshGroupRef) => {
+    Export: buttonGroup({
+      GLTF: (meshGroupRef) => {
         ExportGLTF(meshGroupRef);
+      }
+    })
+  });
+  useControls({
+    Spawn: buttonGroup({
+      Grill: () => {
+        handleSpawn("Grill");
+      },
+      Astro: () => {
+        handleSpawn("Astro");
+      },
+      Robo: () => {
+        handleSpawn("Robo");
+      },
+      Lambo: () => {
+        handleSpawn("Lambo");
       }
     })
   });
@@ -137,59 +146,35 @@ const GameElements = ({ ...props }) => {
   // Setup Scene Initialisation
   useEffect(() => {
     // Update the document title using the browser API
-    console.log("init");
-    setLookAtTarget(sphere);
+    console.log(props.grabbing);
+    if (props.grabbing) handleSpawn("" + props.grabbing);
+    // setLookAtTarget(sphere);
     return () => {
       //Cleanup
     };
   }, [props.grabbing]);
 
-  // useEffect(() => {
-  //   if (transform.current) {
-  //     const controls = transform.current;
-  //     controls.setMode(mode);
-  //     const callback = (event) => (orbit.current.enabled = !event.value);
-  //     controls.addEventListener("dragging-changed", callback);
-  //     return () => controls.removeEventListener("dragging-changed", callback);
-  //   }
-  // });
-  var i = 0;
+  const spawnURL = useRef();
   const [spawnCount, setSpawnCount] = useState([]);
-  // const [spawnedPos, setSpawnedPos] = useState([]);
+
   const handleSpawn = useCallback((e) => {
-    i++;
-    // setSpawnedPos((spawnedPos) => [...spawnedPos, e]);
-    setSpawnCount((spawnCounts) => [...spawnCounts, i]);
+    setSpawnCount((spawnCounts) => [
+      ...spawnCounts,
+      { url: urls[e].url, uuid: v4(), scale: urls[e].scale }
+    ]);
   }, []);
 
   var q = new THREE.Quaternion(),
     p = new THREE.Vector3();
   p.set(0, 0, 5.5);
   q.identity();
-
   // Setup Per Frame Update
   useFrame((state, dt, delta, time) => {
-    // console.log(spawnCount.map(key, 1));
     if (!hovered) {
       // state.camera.forward.lookAt(lookAtTarget.position);
       // state.camera.position.lerp(p, THREE.MathUtils.damp(0, 1, 3, dt));
       // state.camera.quaternion.slerp(q, THREE.MathUtils.damp(0, 1, 3, dt));
     }
-    // if (selectedItem.current) {
-    //   var pos = selectedItem.current.getWorldPosition();
-    //   var leftDist = distance(pos, {
-    //     x: leftPos[0],
-    //     y: leftPos[1],
-    //     z: leftPos[2]
-    //   });
-    //   var rightDist = distance(pos, {
-    //     x: rightPos[0],
-    //     y: rightPos[1],
-    //     z: rightPos[2]
-    //   });
-
-    //   setNearLeft(leftDist < rightDist);
-    // }
   });
 
   const [drag, setDrag] = useState(false);
@@ -200,53 +185,25 @@ const GameElements = ({ ...props }) => {
 
   return (
     <group name="GEOMETRIES" ref={meshGroupRef}>
-      {/* <OrbitControls ref={orbit} /> */}
-      <Model>
-        {/* <Html distanceFactor={10} position={[1, 7, 1]}>
-          <div class="content">View</div>
-        </Html> */}
-      </Model>
-
+      <Base scale={2} position={[0, 1, 0]} />
       <group ref={parentSpawner}>
         {spawnCount.map((key, index) => (
-          <Draggable {...dragProps}>
-            <Character
-              key={key}
-              sceneRotation={sceneRotation}
-              textureResources={CHARACTER_TEXTURES}
-              position={[-4, -1 + index * 1, 0]}
-              setTarget={setTarget}
-              onHover={onHover}
+          <Draggable key={key.uuid} {...dragProps}>
+            <Item
+              key={key.uuid}
+              url={key.url}
+              uuid={key.uuid}
+              scale={key.scale}
+              pivotY={key.pivotY}
+              position={[-1, -1, 4 + index * 2]}
             />
           </Draggable>
         ))}
       </group>
 
-      {/* <Draggable {...dragProps}> */}
-      <Box
-        ref={box1}
-        position={leftPos}
-        opacity={leftOpacity}
-        onPointerUp={() => {
-          // setLeftOpacity(0);
-          // if (box1.current) box1.current.position = leftPos;
-        }}
-      />
-      {/* </Draggable> */}
-      {/* <Draggable {...dragProps}> */}
-      <Box
-        ref={box2}
-        position={rightPos}
-        opacity={rightOpacity}
-        onPointerUp={() => {
-          // setRightOpacity(0);
-          // if (box2.current) box2.current.position = rightPos;
-        }}
-      />
-      {/* </Draggable> */}
-      {/* {target && (
-        <TransformControls ref={transform} object={target} mode={mode} />
-      )} */}
+      <Box position={leftPos} opacity={leftOpacity} />
+      <Box position={rightPos} opacity={rightOpacity} />
+
       <Draggable {...dragProps}>
         <Sphere
           args={[1, 22, 22]}
@@ -267,13 +224,6 @@ const GameElements = ({ ...props }) => {
           />
         </Sphere>
       </Draggable>
-      {/* <Draggable {...dragProps}>
-        <mesh ref={selectedItem} position={[0, 2, 0]}>
-          <boxGeometry />
-          <meshStandardMaterial color="orange" />
-        </mesh>
-      </Draggable> */}
-
       {props.grabbing && (
         <>
           <mesh
@@ -329,7 +279,6 @@ const GameElements = ({ ...props }) => {
           </mesh>
         </>
       )}
-
       <EffectComposer multisampling={8} autoClear={false}>
         <Outline
           blur
@@ -339,7 +288,6 @@ const GameElements = ({ ...props }) => {
           width={500}
         />
       </EffectComposer>
-
       <ContactShadows
         rotation={[Math.PI / 2, 0, 0]}
         position={[0, -1, 0]}

@@ -5,7 +5,7 @@ import { GameElements } from "./components/GameElements";
 const Root = ({ ...props }) => {
   return (
     <>
-      <GameElements grabbing={props.grabbing} />
+      <GameElements {...props} />
       <Lights />
       <Camera />
     </>

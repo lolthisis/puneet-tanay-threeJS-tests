@@ -11,6 +11,7 @@ const Character = ({ ...props }) => {
 
   return (
     <RoundedBox
+      name={props.name}
       args={[1, 1, 1]}
       radius={0.2}
       smoothness={4}
