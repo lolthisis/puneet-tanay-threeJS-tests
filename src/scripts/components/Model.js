@@ -7,7 +7,6 @@ const Model = ({ ...props }) => {
   const gltf = useGLTF("" + props.url);
   const ref = useRef();
   const ref1 = useRef();
-  const ref2 = useRef();
   const [visibleBox, setVisibleBox] = useState(false);
   useEffect(() => {
     let bb = new three.Box3().setFromObject(ref.current);
@@ -17,12 +16,6 @@ const Model = ({ ...props }) => {
       ref1.current.scale.y = size.y;
       ref1.current.scale.z = size.z;
       ref1.current.position.y += size.y / 2; // * props.pivotY;
-    }
-    if (ref2.current) {
-      ref2.current.scale.x = size.x;
-      ref2.current.scale.y = size.y;
-      ref2.current.scale.z = size.z;
-      ref2.current.position.y += size.y / 2; // * props.pivotY;
     }
   }, [gltf]);
 
@@ -37,7 +30,12 @@ const Model = ({ ...props }) => {
         {...props}
       />
 
-      <mesh ref={ref1} position={props.position} castShadow={false}>
+      <mesh
+        ref={ref1}
+        position={props.position}
+        castShadow={false}
+        onClick={() => props.handleDelete(props.myKey)}
+      >
         <boxGeometry />
         <meshStandardMaterial
           opacity={visibleBox ? 0.3 : 0}

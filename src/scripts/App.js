@@ -7,28 +7,28 @@ import { Environment, Loader } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Root } from "./Root";
 import { ScreenSpaceUI } from "./components/ScreenSpaceUI";
-import {
-  FirebaseDatabaseProvider,
-  FirebaseDatabaseNode,
-  FirebaseDatabaseMutation
-} from "@react-firebase/database";
-import * as firebase from "firebase/app";
+// import {
+//   FirebaseDatabaseProvider,
+//   FirebaseDatabaseNode,
+//   FirebaseDatabaseMutation
+// } from "@react-firebase/database";
+// import * as firebase from "firebase/app";
 // import { config } from "./config";
 
-const collectionPath = "TEST_NAMESPACE/user_bookmarks/";
-const testDocValue = {
-  nowOnCli: Date.now(),
-  nowOnServer: 1234,
-  some: "data"
-};
+// const collectionPath = "TEST_NAMESPACE/user_bookmarks/";
+// const testDocValue = {
+//   nowOnCli: Date.now(),
+//   nowOnServer: 1234,
+//   some: "data"
+// };
 
 export default function App() {
   const [grabbing, setGrabbing] = useState(false);
-  const [keys, setKeys] = useState([]);
+  // const [keys, setKeys] = useState([]);
   return (
     <>
       {/* <FirebaseDatabaseProvider firebase={firebase} {...config}> */}
-      <Canvas shadows dpr={[1, 2]}>
+      <Canvas shadows dpr={[1, 2]} camera={{ position: [20, 15, 50], fov: 42 }}>
         <Suspense fallback={null}>
           <Root grabbing={grabbing} />
           <Environment preset="city" />

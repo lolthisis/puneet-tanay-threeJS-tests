@@ -54,6 +54,85 @@ function Base({ ...props }) {
     </group>
   );
 }
+function damp(target, to, step, delta, v = new THREE.Vector3()) {
+  if (target instanceof THREE.Vector3) {
+    target.x = THREE.MathUtils.damp(target.x, to[0], step, delta);
+    target.y = THREE.MathUtils.damp(target.y, to[1], step, delta);
+    target.z = THREE.MathUtils.damp(target.z, to[2], step, delta);
+  }
+}
+function distanceVector(v1, v2) {
+  var dx = v1.x - v2.x;
+  var dy = v1.y - v2.y;
+  var dz = v1.z - v2.z;
+
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+function Craftsman({ ...props }) {
+  const gtlf = useGLTF("/craftsman.glb");
+  const [zoom, set] = useState(false);
+  const [weDone, setWeDone] = useState(false);
+  const lookHere = useRef();
+  console.log(gtlf.scene);
+  function OnMouseUp(e) {
+    console.log("up");
+    if (zoom) set(false);
+  }
+  useEffect(() => {
+    lookHere.current = [0, 0, -5];
+    document.querySelector("canvas").addEventListener("mouseup", OnMouseUp);
+    return () => {
+      if (document.querySelector("canvas"))
+        document
+          .querySelector("canvas")
+          .removeEventListener("mouseup", OnMouseUp);
+    };
+  });
+  useEffect(() => {
+    props.setHotspotZoomed(zoom);
+    if (zoom) setWeDone(false);
+  }, [zoom, props]);
+  useFrame((state, delta) => {
+    // if (!zoom) return;
+    if (weDone) return;
+    if (!zoom) {
+      if (distanceVector(state.camera.position, { x: 10, y: 5, z: 10 }) < 1)
+        setWeDone(true);
+    }
+    const step = 4;
+    state.camera.fov = THREE.MathUtils.damp(
+      state.camera.fov,
+      zoom ? 25 : 32,
+      step,
+      zoom ? delta : delta * 2
+    );
+    damp(
+      state.camera.position,
+      [zoom ? 5 : 10, zoom ? 1 : 5, zoom ? -10 : 10],
+      step,
+      zoom ? delta : delta * 2
+    );
+    // state.camera.lookAt(0, 0, -5);
+    state.camera.updateProjectionMatrix();
+  });
+  return (
+    <group dispose={null} {...props}>
+      <primitive object={gtlf.scene}>
+        <Html
+          // scale={3}
+          distanceFactor={20}
+          position={[0.2, 0.5, -0.5]}
+          // transform
+          // occlude
+        >
+          <div className="annotation" onClick={() => set(!zoom)}>
+            {!zoom ? "X" : "X"}
+          </div>
+        </Html>
+      </primitive>
+    </group>
+  );
+}
 function Box({ position, opacity }) {
   // const ref2 = useRef();
   // useEffect(() => {
@@ -85,12 +164,12 @@ const GameElements = ({ ...props }) => {
   // Load Resources
   // https://www.npmjs.com/package/@react-three/drei#usetexture
   const CHARACTER_TEXTURES = {
-    DIFF: useTexture("./aerial_rocks_02_diff_2k.jpg"),
-    NORMAL: useTexture("./aerial_rocks_02_nor_gl_2k.jpg"),
-    ROUGHNESS: useTexture("./aerial_rocks_02_rough_2k.jpg")
+    // DIFF: useTexture("./aerial_rocks_02_diff_2k.jpg"),
+    NORMAL: useTexture("./aerial_rocks_02_nor_gl_2k.jpg")
+    // ROUGHNESS: useTexture("./aerial_rocks_02_rough_2k.jpg")
   };
 
-  const [matcap] = useMatcapTexture("161B1F_C7E0EC_90A5B3_7B8C9B");
+  // const [matcap] = useMatcapTexture("161B1F_C7E0EC_90A5B3_7B8C9B");
 
   // Setup Scene References
   const [sceneRotation, setSceneRotation] = useState(1);
@@ -135,6 +214,7 @@ const GameElements = ({ ...props }) => {
 
   const [target, setTarget] = useState(null);
   const [lookAtTarget, setLookAtTarget] = useState(null);
+  const [hotspotZoomed, setHotspotZoomed] = useState(false);
   const [hovered, onHover] = useState(null);
   const [nearleft, setNearLeft] = useState(false);
   const [leftOpacity, setLeftOpacity] = useState(0);
@@ -159,11 +239,23 @@ const GameElements = ({ ...props }) => {
   const [spawnCount, setSpawnCount] = useState([]);
 
   const handleSpawn = useCallback((e) => {
+    var uniqueID = v4();
+    // console.log(uniqueID);
     setSpawnCount((spawnCounts) => [
       ...spawnCounts,
-      { url: urls[e].url, uuid: v4(), scale: urls[e].scale }
+      { url: urls[e].url, uuid: uniqueID, scale: urls[e].scale }
     ]);
   }, []);
+  const handleDelete = useCallback(
+    (e) => {
+      console.log(e.uuid);
+      console.log(spawnCount.length);
+      setSpawnCount(spawnCount.filter((item) => item.uuid !== e.uuid));
+      console.log(spawnCount.length);
+      // setSpawnCount(spawnCount.delete(e));
+    },
+    [spawnCount]
+  );
 
   var q = new THREE.Quaternion(),
     p = new THREE.Vector3();
@@ -186,6 +278,11 @@ const GameElements = ({ ...props }) => {
 
   return (
     <group name="GEOMETRIES" ref={meshGroupRef}>
+      <Craftsman
+        scale={2}
+        position={[0, -1, -5]}
+        setHotspotZoomed={setHotspotZoomed}
+      />
       <Base scale={2} position={[0, 1, 0]} />
       <group ref={parentSpawner}>
         {spawnCount.map((key, index) => (
@@ -196,15 +293,15 @@ const GameElements = ({ ...props }) => {
               uuid={key.uuid}
               scale={key.scale}
               pivotY={key.pivotY}
+              myKey={key}
+              handleDelete={handleDelete}
               position={[-1, -1, 4 + index * 2]}
             />
           </Draggable>
         ))}
       </group>
-
       <Box position={leftPos} opacity={leftOpacity} />
       <Box position={rightPos} opacity={rightOpacity} />
-
       <Draggable {...dragProps}>
         <Sphere
           args={[1, 22, 22]}
@@ -300,7 +397,11 @@ const GameElements = ({ ...props }) => {
         far={1}
         resolution={1024}
       />
-      <OrbitControls enabled={!drag} />
+      <OrbitControls
+        enabled={!drag}
+        enableRotate={!hotspotZoomed}
+        target={[0, 0, -5]}
+      />
     </group>
   );
 };

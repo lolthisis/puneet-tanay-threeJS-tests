@@ -3,7 +3,7 @@ import { Model } from "./Model";
 import { Box } from "@react-three/drei";
 const Item = ({ ...props }) => {
   return (
-    <Suspense fallback={<Box />}>
+    <Suspense fallback={<Box {...props} />}>
       <Model key={props.uuid} {...props} />
     </Suspense>
   );

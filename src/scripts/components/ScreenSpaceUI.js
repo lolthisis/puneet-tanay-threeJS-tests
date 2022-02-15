@@ -30,9 +30,10 @@ const ScreenSpaceUI = ({ ...props }) => {
     document.querySelector("canvas").addEventListener("mouseup", OnMouseUp);
     return () => {
       root.current.removeEventListener("mousemove", OnMouseMove);
-      document
-        .querySelector("canvas")
-        .removeEventListener("mouseup", OnMouseUp);
+      if (document.querySelector("canvas"))
+        document
+          .querySelector("canvas")
+          .removeEventListener("mouseup", OnMouseUp);
     };
   });
 
@@ -41,7 +42,7 @@ const ScreenSpaceUI = ({ ...props }) => {
       <img className={"cursorImg"} ref={cursorImgRef} alt="" src="" />
 
       <div className={"ItemsParent"}>
-        <img
+        {/* <img
           className={"Item"}
           src="https://www.transparentpng.com/thumb/cube/AZIkiw-cube-transparent-image.png"
           onMouseDown={() => {
@@ -55,12 +56,12 @@ const ScreenSpaceUI = ({ ...props }) => {
             if (root.current) root.current.style.cursor = "grabbing";
           }}
           alt="Cube"
-        />
+        /> */}
         <img
           className={"Item"}
           src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/44c37112-6a1a-480d-b53d-ae53ca8029d7/dde3pvw-5b5132e2-37ad-4792-84cb-ac9fddf40a9a.png/v1/fill/w_1024,h_1020,strp/astronaut_png_by_hamza7black_dde3pvw-fullview.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTAyMCIsInBhdGgiOiJcL2ZcLzQ0YzM3MTEyLTZhMWEtNDgwZC1iNTNkLWFlNTNjYTgwMjlkN1wvZGRlM3B2dy01YjUxMzJlMi0zN2FkLTQ3OTItODRjYi1hYzlmZGRmNDBhOWEucG5nIiwid2lkdGgiOiI8PTEwMjQifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.KO59mOPt5HNXPke_JKgQ4B7O1tsbTkb_z2YSXcoPpdM"
           onMouseDown={() => {
-            console.log("down");
+            // console.log("down");
             props.setGrabbing("Astro");
             if (cursorImgRef.current) {
               cursorImgRef.current.src =
@@ -75,7 +76,7 @@ const ScreenSpaceUI = ({ ...props }) => {
           className={"Item"}
           src="https://images.pngnice.com/download/2007/Grill-PNG-Free-Image.png"
           onMouseDown={() => {
-            console.log("down");
+            // console.log("down");
             props.setGrabbing("Grill");
             if (cursorImgRef.current) {
               cursorImgRef.current.src =
@@ -90,11 +91,26 @@ const ScreenSpaceUI = ({ ...props }) => {
           className={"Item"}
           src="https://pbs.twimg.com/profile_images/1136014070765772800/zpkkb7B0_400x400.png"
           onMouseDown={() => {
-            console.log("down");
+            // console.log("down");
             props.setGrabbing("Craftsman");
             if (cursorImgRef.current) {
               cursorImgRef.current.src =
                 "https://pbs.twimg.com/profile_images/1136014070765772800/zpkkb7B0_400x400.png";
+              cursorImgRef.current.classList.add("active");
+            }
+            if (root.current) root.current.style.cursor = "grabbing";
+          }}
+          alt="Cube"
+        />
+        <img
+          className={"Item"}
+          src="https://clipart.world/wp-content/uploads/2020/12/Orange-Robot-clipart-transparent.png"
+          onMouseDown={() => {
+            // console.log("down");
+            props.setGrabbing("Robo");
+            if (cursorImgRef.current) {
+              cursorImgRef.current.src =
+                "https://clipart.world/wp-content/uploads/2020/12/Orange-Robot-clipart-transparent.png";
               cursorImgRef.current.classList.add("active");
             }
             if (root.current) root.current.style.cursor = "grabbing";
